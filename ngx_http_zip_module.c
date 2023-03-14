@@ -164,6 +164,7 @@ ngx_http_zip_main_request_header_filter(ngx_http_request_t *r)
 
     if ((ctx = ngx_http_get_module_ctx(r, ngx_http_zip_module)) != NULL)
         return ngx_http_next_header_filter(r);
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "mod_zip: pointer read 1 %p", ctx);
 
     if ((vv = ngx_palloc(r->pool, sizeof(ngx_http_variable_value_t))) == NULL) 
         return NGX_ERROR;
@@ -207,6 +208,7 @@ ngx_http_zip_subrequest_header_filter(ngx_http_request_t *r)
     ngx_http_zip_ctx_t    *ctx;
 
     ctx = ngx_http_get_module_ctx(r->main, ngx_http_zip_module);
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "mod_zip: pointer read 2 %p", ctx);
     if (ctx != NULL) {
         if (r->headers_out.status != NGX_HTTP_OK &&
                 r->headers_out.status != NGX_HTTP_PARTIAL_CONTENT) {
@@ -335,6 +337,7 @@ ngx_http_zip_subrequest_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
     ngx_http_zip_sr_ctx_t *sr_ctx;
 
     sr_ctx = ngx_http_get_module_ctx(r, ngx_http_zip_module);
+    //ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "mod_zip: pointer read %p", sr_ctx);
 
     if (in && sr_ctx && sr_ctx->requesting_file->missing_crc32) {
         uint32_t old_crc32 = sr_ctx->requesting_file->crc32;
@@ -394,6 +397,7 @@ ngx_http_zip_main_request_body_filter(ngx_http_request_t *r,
     int rc;
 
     ctx = ngx_http_get_module_ctx(r, ngx_http_zip_module);
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "mod_zip: pointer read 4 %p", ctx);
 
     if (ctx == NULL || ctx->trailer_sent) {
         return ngx_http_next_body_filter(r, in);
@@ -543,6 +547,7 @@ ngx_http_zip_send_file_piece(ngx_http_request_t *r, ngx_http_zip_ctx_t *ctx,
     sr_ctx->requesting_file = piece->file;
 
     ngx_http_set_ctx(sr, sr_ctx, ngx_http_zip_module);
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "mod_zip: pointer %p", sr_ctx);
     if (ctx->wait) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                 "mod_zip : only one subrequest may be waited at the same time; ");
